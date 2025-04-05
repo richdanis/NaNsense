@@ -3,3 +3,7 @@ python-dotenv
 ipykernel
 langchain
 chromadb
+langchain-community
+langchain-openai
+sentence-transformers
+ipywidgets
