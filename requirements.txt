@@ -7,3 +7,5 @@ langchain-community
 langchain-openai
 sentence-transformers
 ipywidgets
+gradio
+openai_gradio
