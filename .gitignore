@@ -5,3 +5,5 @@ __pycache__/
 # jupyter-notebooks
 .ipynb_checkpoints
 *.ipynb_metadata/
+data_clean
+.DS_Store
