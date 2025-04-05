@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from prompts import generate_answer, load_prompts
+from keyword_retrieval import hybrid_retrieve_documents
 
 
 # Load the vector database
@@ -35,37 +36,47 @@ def load_vector_db(persist_directory="./chroma_db"):
     return vectordb
 
 
-def retrieve_documents(query, k=3, vector_db=None):
+def retrieve_documents(query, k=3, vector_db=None, use_hybrid=False):
     """
     Retrieve relevant documents from the vector database based on the query.
 
     Args:
         query: User query string
         k: Number of documents to retrieve
+        vector_db: Vector database to search
+        use_hybrid: Whether to use hybrid retrieval
 
     Returns:
         List of retrieved documents
     """
     if vector_db is None:
         return []
-    retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": k})
-    docs = retriever.invoke(query)
-    return docs
+
+    if use_hybrid:
+        return hybrid_retrieve_documents(query, vector_db, k)
+    else:
+        retriever = vector_db.as_retriever(
+            search_type="similarity", search_kwargs={"k": k}
+        )
+        docs = retriever.invoke(query)
+        return docs
 
 
-def query_rag(query, k=3, vector_db=None):
+def query_rag(query, k=3, vector_db=None, use_hybrid=False):
     """
     Process a query using RAG and return the answer.
 
     Args:
         query: User query
         k: Number of documents to retrieve
+        vector_db: Vector database to search
+        use_hybrid: Whether to use hybrid retrieval
 
     Returns:
         Generated answer based on retrieved context
     """
     # Retrieve relevant documents
-    retrieved_docs = retrieve_documents(query, k, vector_db)
+    retrieved_docs = retrieve_documents(query, k, vector_db, use_hybrid)
 
     # Extract the page content from the documents
     retrieved_texts = [doc.page_content for doc in retrieved_docs]
@@ -82,12 +93,12 @@ def query_rag(query, k=3, vector_db=None):
 
 
 # Create Gradio interface
-def process_query(query, k):
+def process_query(query, k, use_hybrid):
     if not query.strip():
         return "Please enter a query."
 
     try:
-        return query_rag(query, k=k)
+        return query_rag(query, k=k, vector_db=vector_db, use_hybrid=use_hybrid)
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
@@ -130,16 +141,24 @@ if __name__ == "__main__":
                     step=1,
                     label="Number of documents to retrieve",
                 )
+                hybrid_checkbox = gr.Checkbox(
+                    label="Use Hybrid Retrieval (Keywords + Vectors)",
+                    value=True,
+                )
 
         submit_btn = gr.Button("Submit")
 
         answer_output = gr.Textbox(label="Answer", lines=10)
 
         submit_btn.click(
-            fn=process_query, inputs=[query_input, k_slider], outputs=answer_output
+            fn=process_query,
+            inputs=[query_input, k_slider, hybrid_checkbox],
+            outputs=answer_output,
         )
 
         query_input.submit(
-            fn=process_query, inputs=[query_input, k_slider], outputs=answer_output
+            fn=process_query,
+            inputs=[query_input, k_slider, hybrid_checkbox],
+            outputs=answer_output,
         )
     demo.launch()

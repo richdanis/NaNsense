@@ -7,6 +7,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
 from prompts import generate_answer, load_prompts
+from keyword_retrieval import hybrid_retrieve_documents
 
 
 def load_vector_db(persist_directory="./chroma_db"):
@@ -37,7 +38,7 @@ def load_vector_db(persist_directory="./chroma_db"):
     return vectordb
 
 
-def retrieve_documents(query, k=3, vector_db=None):
+def retrieve_documents(query, k=3, vector_db=None, use_hybrid=False):
     """
     Retrieve relevant documents from the vector database based on the query.
 
@@ -45,15 +46,22 @@ def retrieve_documents(query, k=3, vector_db=None):
         query: User query string
         k: Number of documents to retrieve
         vector_db: Vector database to search
+        use_hybrid: Whether to use hybrid retrieval (keywords + vectors)
 
     Returns:
         List of retrieved documents
     """
     if vector_db is None:
         return []
-    retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": k})
-    docs = retriever.invoke(query)
-    return docs
+
+    if use_hybrid:
+        return hybrid_retrieve_documents(query, vector_db, k)
+    else:
+        retriever = vector_db.as_retriever(
+            search_type="similarity", search_kwargs={"k": k}
+        )
+        docs = retriever.invoke(query)
+        return docs
 
 
 def check_exact_match(prediction, reference):
@@ -76,7 +84,11 @@ def check_exact_match(prediction, reference):
 
 
 def evaluate_rag_system(
-    benchmark_file, k=3, prompt_template_name="rag_default", model="gpt-4o-mini"
+    benchmark_file,
+    k=3,
+    prompt_template_name="rag_default",
+    model="gpt-4o-mini",
+    use_hybrid=False,
 ):
     """
     Evaluate the RAG system using a benchmark dataset.
@@ -86,6 +98,7 @@ def evaluate_rag_system(
         k: Number of documents to retrieve for each query
         prompt_template_name: Name of the prompt template to use
         model: Model to use for generation
+        use_hybrid: Whether to use hybrid retrieval
 
     Returns:
         Dictionary with evaluation metrics
@@ -108,7 +121,9 @@ def evaluate_rag_system(
         reference_answer = item["answer"]
 
         # Retrieve documents
-        retrieved_docs = retrieve_documents(question, k=k, vector_db=vector_db)
+        retrieved_docs = retrieve_documents(
+            question, k=k, vector_db=vector_db, use_hybrid=use_hybrid
+        )
         retrieved_texts = [doc.page_content for doc in retrieved_docs]
 
         # Generate answer
@@ -178,6 +193,7 @@ if __name__ == "__main__":
     k = 3  # Number of documents to retrieve
     prompt_template_name = "rag_default"
     model = "gpt-4o-mini"
+    use_hybrid = True  # Enable hybrid retrieval
 
     # Run evaluation
     results = evaluate_rag_system(
@@ -185,6 +201,7 @@ if __name__ == "__main__":
         k=k,
         prompt_template_name=prompt_template_name,
         model=model,
+        use_hybrid=use_hybrid,
     )
 
     # Print summary metrics
