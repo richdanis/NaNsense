@@ -1,3 +1,7 @@
 .env
 .venv
 data
+__pycache__/
+# jupyter-notebooks
+.ipynb_checkpoints
+*.ipynb_metadata/
