@@ -9,3 +9,4 @@ sentence-transformers
 ipywidgets
 gradio
 openai_gradio
+tqdm
