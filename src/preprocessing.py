@@ -81,6 +81,6 @@ def filter_json_file(filepath, output_dir, debug=False):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
     if debug:
-    print(
-        f"Filtered: {filename} (kept {len(filtered_pages)}/{len(original_pages)} pages)"
-    )
+        print(
+            f"Filtered: {filename} (kept {len(filtered_pages)}/{len(original_pages)} pages)"
+        )
