@@ -69,9 +69,6 @@ def fuzzy_is_meta(use_all_doc= True):
         "Nordics", "Eastern Europe", "Europe", "USA", "Canada", "China", "India", "Southeast Asia",
         "Middle East", "Latin America", "North Africa"
     ]
-
-    
-        
     cwd = os.getcwd()
     cwd = os.path.join(cwd, "data", "clean")
     files_in_folder = os.listdir(cwd)
