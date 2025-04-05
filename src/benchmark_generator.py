@@ -52,9 +52,10 @@ def get_random_page_content(json_data):
     return random_url, page_content
 
 
-def generate_qa_pair(page_content, url, website_url, model="gpt-4o-mini"):
+def generate_qa_pair(page_content, url, website_url, model="o1"):
     """
     Generate a question-answer pair based on the page content using OpenAI.
+    The question should be answerable directly from the provided content and only contain a single word.
 
     Args:
         page_content: Text content of the page
@@ -103,7 +104,6 @@ Format your response as a JSON object with "question" and "answer" fields only:
         model=model,
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
-        temperature=0.7,
     )
 
     # Parse the response

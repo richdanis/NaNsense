@@ -64,7 +64,7 @@ To evaluate our system, we created a benchmark dataset consisting of 50 question
 2. Includes specific, factual questions that test precise information retrieval
 3. Provides reference answers for comparison
 
-The benchmark generation process used GPT-4o to create challenging but answerable questions based on randomly selected documents from our corpus.
+The benchmark generation process used o1 for maximum quality and diversity to create challenging but answerable questions based on randomly selected documents from our corpus.
 
 ## User Interface
 
