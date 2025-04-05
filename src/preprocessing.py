@@ -1,7 +1,7 @@
 import json
 import os
 
-from resources_words import (
+from .resources_words import (
     business_url_paths,
     banned_extenstions,
     banned_url_paths,
@@ -58,7 +58,7 @@ def is_relevant_url(url: str) -> bool:
     return False
 
 
-def filter_json_file(filepath, output_dir):
+def filter_json_file(filepath, output_dir, debug=False):
     """Filter the JSON file to keep only relevant URLs. text_by_page_url field of the json file is changed to
     contain only relevant URLs, and not resources such as css, javascript, image files.
     """
@@ -67,7 +67,7 @@ def filter_json_file(filepath, output_dir):
 
     original_pages = data.get("text_by_page_url", {})
     filtered_pages = {
-        url: cut_first_k(remove_stopwords(text), cut_beginning=0.1)
+        url: cut_first_k(remove_stopwords(text), percent=0.1)
         for url, text in original_pages.items()
         if is_relevant_url(url)
     }
@@ -80,6 +80,7 @@ def filter_json_file(filepath, output_dir):
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
+    if debug:
     print(
         f"Filtered: {filename} (kept {len(filtered_pages)}/{len(original_pages)} pages)"
     )

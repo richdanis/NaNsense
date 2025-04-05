@@ -10,3 +10,4 @@ ipywidgets
 gradio
 openai_gradio
 tqdm
+torch
