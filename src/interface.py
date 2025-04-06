@@ -9,6 +9,10 @@ def query_rag_streaming(query, k=3, vector_db=None, use_hybrid=False):
     """
     Process a query using RAG and stream the answer.
     """
+
+    prompts = load_prompts()
+    prompt_template = prompts["rag_default"]
+
     retrieved_docs = retrieve_documents(query, k, vector_db, use_hybrid)
     retrieved_texts = [doc.page_content for doc in retrieved_docs]
 
@@ -42,9 +46,6 @@ if __name__ == "__main__":
     load_dotenv()
 
     os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
-    prompts = load_prompts()
-    prompt_template = prompts["default"]
 
     if os.path.exists("./chroma_db"):
         vector_db = load_vector_db()
