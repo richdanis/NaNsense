@@ -8,13 +8,13 @@ This report outlines our implementation of a Retrieval-Augmented Generation (RAG
 
 ### Data Cleaning
 
-Our pipeline begins with thorough data cleaning to ensure high-quality inputs for our vector database:
+Our pipeline begins with thorough data cleaning to remove noise and significantly reduce the size of the dataset:
 
 1. **URL Filtering**: We implemented intelligent filtering to retain only URLs containing meaningful content while excluding resource files (CSS, JavaScript, images).
 2. **Text Processing**: Applied stopword removal to eliminate common words that don't contribute to semantic meaning.
-3. **Content Trimming**: Removed the first 15% of text content from each page, as this often contains navigation elements and headers rather than substantive information.
+3. **Content Trimming**: Removed the first 10% of text content from each page, as this often contains navigation elements and headers rather than substantive information.
 
-This cleaning process significantly reduced noise in our dataset while preserving the essential information needed for accurate retrieval.
+This cleaning process reduced the size of the dataset from 17GB to 1.9GB.
 
 ### Document Chunking
 
@@ -58,22 +58,15 @@ Our prompt design emphasizes factual accuracy and attribution to the source mate
 
 ## Evaluation
 
-To evaluate our system, we created a benchmark dataset consisting of 50 question-answer pairs derived from our corpus. This benchmark:
+To evaluate our system, we created a benchmark dataset consisting of 50 question-answer pairs using o1.
+We prompted o1 to generate questions with single-word answers for randomly selected pages.
+Evaluation is done by comparing the answer from the model with the answer from the ground truth and checking for a match.
 
-1. Contains diverse questions across multiple domains
-2. Includes specific, factual questions that test precise information retrieval
-3. Provides reference answers for comparison
-
-The benchmark generation process used o1 for maximum quality and diversity to create challenging but answerable questions based on randomly selected documents from our corpus.
 
 ## User Interface
 
-We implemented a Gradio-based interface that allows users to:
-
-1. Submit natural language queries
-2. Adjust the number of documents to retrieve
-3. View generated responses with source attribution
-
+We implemented a Gradio-based interface that allows users to submit natural language queries and view generated responses with source attribution.
+Additionally, users can adjust the number of documents retrieved and the threshold for similarity score.
 This interface makes the system accessible to non-technical users while providing transparency about the sources of information.
 
 ## Conclusion
