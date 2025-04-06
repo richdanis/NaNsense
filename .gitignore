@@ -8,3 +8,7 @@ __pycache__/
 data_clean
 .DS_Store
 # chroma_db
+evaluation_results*
+*.bin
+*.pickle
+*.zip
