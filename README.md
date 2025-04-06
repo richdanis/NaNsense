@@ -2,6 +2,9 @@
 
 Datathon 2025 RAG Challenge
 
+### Video Demo
+[Click to watch demo](./video-demo.mov)
+
 ### Setup
 
 Create the virtual environment:
