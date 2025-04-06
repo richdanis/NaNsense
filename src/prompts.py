@@ -40,3 +40,28 @@ def generate_answer(query, retrieved_texts, prompt_template, model="gpt-4o"):
     )
 
     return response.choices[0].message.content
+
+
+def generate_answer_streaming(query, retrieved_texts, prompt_template, model="gpt-4o"):
+    """
+    Get a streaming response from OpenAI's models.
+    """
+    load_dotenv()
+    client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+    if isinstance(retrieved_texts, list):
+        context = "\n\n".join(retrieved_texts)
+    else:
+        context = str(retrieved_texts)
+
+    formatted_prompt = prompt_template.format(context=context, query=query)
+
+    response_stream = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": formatted_prompt}],
+        stream=True,
+    )
+
+    for chunk in response_stream:
+        if chunk.choices[0].delta.content is not None:
+            yield chunk.choices[0].delta.content

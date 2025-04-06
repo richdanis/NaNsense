@@ -1,8 +1,4 @@
-# RAG System Implementation Report
-
-## Overview
-
-This report outlines our implementation of a Retrieval-Augmented Generation (RAG) system designed to provide accurate answers to user queries by leveraging a large corpus of website content. Our approach combines efficient document processing, semantic search capabilities, and state-of-the-art language models to deliver contextually relevant responses.
+# NaNsense RAG Agent 🚀
 
 ## Data Processing Pipeline
 
@@ -61,7 +57,6 @@ Our prompt design emphasizes factual accuracy and attribution to the source mate
 To evaluate our system, we created a benchmark dataset consisting of 50 question-answer pairs using o1.
 We prompted o1 to generate questions with single-word answers for randomly selected pages.
 Evaluation is done by comparing the answer from the model with the answer from the ground truth and checking for a match.
-
 
 ## User Interface
 
