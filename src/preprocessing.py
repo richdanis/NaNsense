@@ -11,6 +11,9 @@ from .resources_words import (
 
 
 def remove_stopwords(text):
+    """
+    Remove stopwords and language-specific words from the text to reduce size.
+    """
     words = text.split()
     filtered_words = [
         word for word in words if (word not in stopwords and word not in languages)
@@ -19,6 +22,9 @@ def remove_stopwords(text):
 
 
 def cut_first_k(text, percent):
+    """
+    Discard the first 10% of the words, since in the beginning there is a lot of repetition.
+    """
     if percent == 1:
         return text
 
@@ -35,33 +41,35 @@ def is_relevant_url(url: str) -> bool:
 
     url = url.lower()
 
-    # Keep the base URL
+    # keep the base URL
     if url.endswith(".com/"):
         return True
 
-    # Remove style links
+    # remove style links
     if any(url.endswith(ext) for ext in banned_extenstions) or any(
         ext in url for ext in banned_extenstions
     ):
         return False
 
-    # Remove links that clearly indicate layout/resource files (specific to CMS systems like DNN)
+    # remove links that clearly indicate layout/resource files (specific to CMS systems like DNN)
     if any(part in url for part in banned_url_paths):
         return False
 
-    # Keep URLs that are likely to contain meaningful content
-    # This is a heuristic and may need to be adjusted based on the specific dataset
+    # keep URLs that are likely to contain meaningful content
+    # this is a heuristic and may need to be adjusted based on the specific dataset
     if any(part in url for part in business_url_paths):
         return True
 
-    # Otherwise, remove the URL
+    # otherwise, remove the URL
     return False
 
 
 def filter_json_file(filepath, output_dir, debug=False):
-    """Filter the JSON file to keep only relevant URLs. text_by_page_url field of the json file is changed to
+    """
+    Filter the JSON file to keep only relevant URLs. text_by_page_url field of the json file is changed to
     contain only relevant URLs, and not resources such as css, javascript, image files.
     """
+
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
 

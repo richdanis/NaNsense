@@ -1,5 +1,4 @@
 import json
-import os
 from tqdm import tqdm
 import numpy as np
 from dotenv import load_dotenv
@@ -13,14 +12,7 @@ from keyword_retrieval import hybrid_retrieve_documents
 def load_vector_db(persist_directory="./chroma_db"):
     """
     Load the existing Chroma vector database.
-
-    Args:
-        persist_directory: Directory where the vector database is stored
-
-    Returns:
-        Loaded Chroma vector database
     """
-    # Initialize the embedding model - same as used for creating the DB
     model_kwargs = {"device": "cpu"}
     encode_kwargs = {"normalize_embeddings": True}
 
@@ -30,7 +22,6 @@ def load_vector_db(persist_directory="./chroma_db"):
         encode_kwargs=encode_kwargs,
     )
 
-    # Load the existing vector database
     vectordb = Chroma(
         persist_directory=persist_directory, embedding_function=embeddings
     )
@@ -41,15 +32,6 @@ def load_vector_db(persist_directory="./chroma_db"):
 def retrieve_documents(query, k=3, vector_db=None, use_hybrid=False):
     """
     Retrieve relevant documents from the vector database based on the query.
-
-    Args:
-        query: User query string
-        k: Number of documents to retrieve
-        vector_db: Vector database to search
-        use_hybrid: Whether to use hybrid retrieval (keywords + vectors)
-
-    Returns:
-        List of retrieved documents
     """
     if vector_db is None:
         return []
@@ -67,19 +49,10 @@ def retrieve_documents(query, k=3, vector_db=None, use_hybrid=False):
 def check_exact_match(prediction, reference):
     """
     Check if the prediction exactly matches the reference.
-
-    Args:
-        prediction: Predicted answer
-        reference: Reference answer
-
-    Returns:
-        1.0 if exact match, 0.0 otherwise
     """
-    # Normalize both strings by removing extra whitespace and converting to lowercase
     prediction_norm = " ".join(prediction.lower().split())
     reference_norm = " ".join(reference.lower().split())
 
-    # Check for exact match
     return 1.0 if prediction_norm == reference_norm else 0.0
 
 
@@ -87,30 +60,17 @@ def evaluate_rag_system(
     benchmark_file,
     k=3,
     prompt_template_name="rag_default",
-    model="gpt-4o-mini",
+    model="gpt-4o",
     use_hybrid=False,
 ):
     """
     Evaluate the RAG system using a benchmark dataset.
-
-    Args:
-        benchmark_file: Path to the benchmark JSON file
-        k: Number of documents to retrieve for each query
-        prompt_template_name: Name of the prompt template to use
-        model: Model to use for generation
-        use_hybrid: Whether to use hybrid retrieval
-
-    Returns:
-        Dictionary with evaluation metrics
     """
-    # Load the benchmark data
     with open(benchmark_file, "r", encoding="utf-8") as f:
         benchmark_data = json.load(f)
 
-    # Load the vector database
     vector_db = load_vector_db()
 
-    # Load prompts
     prompts = load_prompts()
     prompt_template = prompts[prompt_template_name]
 
@@ -120,13 +80,11 @@ def evaluate_rag_system(
         question = item["question"]
         reference_answer = item["answer"]
 
-        # Retrieve documents
         retrieved_docs = retrieve_documents(
             question, k=k, vector_db=vector_db, use_hybrid=use_hybrid
         )
         retrieved_texts = [doc.page_content for doc in retrieved_docs]
 
-        # Generate answer
         predicted_answer = generate_answer(
             query=question,
             retrieved_texts=retrieved_texts,
@@ -134,10 +92,8 @@ def evaluate_rag_system(
             model=model,
         )
 
-        # Check for exact match
         match_score = check_exact_match(predicted_answer, reference_answer)
 
-        # Store result
         result = {
             "question": question,
             "reference_answer": reference_answer,
@@ -149,7 +105,6 @@ def evaluate_rag_system(
 
         results.append(result)
 
-    # Calculate metrics
     match_scores = [r["exact_match"] for r in results]
     metrics = {
         "exact_match_accuracy": np.mean(match_scores),
@@ -163,39 +118,16 @@ def evaluate_rag_system(
     return {"metrics": metrics, "results": results}
 
 
-def save_evaluation_results(results, output_file="evaluation_results.json"):
-    """
-    Save evaluation results to a JSON file.
-
-    Args:
-        results: Evaluation results dictionary
-        output_file: Path to save the results
-
-    Returns:
-        None
-    """
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
-
-    print(f"Evaluation results saved to {output_file}")
-
-
 if __name__ == "__main__":
-    # Load environment variables
     load_dotenv()
 
-    # Ensure API key is set
-    if not os.environ.get("OPENAI_API_KEY"):
-        raise ValueError("OPENAI_API_KEY environment variable not set")
-
-    # Set parameters
     benchmark_file = "benchmark.json"
-    k = 3  # Number of documents to retrieve
+    k = 3
     prompt_template_name = "rag_default"
-    model = "gpt-4o-mini"
-    use_hybrid = True  # Enable hybrid retrieval
+    model = "gpt-4o"
+    use_hybrid = False
 
-    # Run evaluation
+    # run evaluation
     results = evaluate_rag_system(
         benchmark_file=benchmark_file,
         k=k,
@@ -204,7 +136,6 @@ if __name__ == "__main__":
         use_hybrid=use_hybrid,
     )
 
-    # Print summary metrics
     print("\nEvaluation Results:")
     for metric, value in results["metrics"].items():
         print(
@@ -213,5 +144,5 @@ if __name__ == "__main__":
             else f"{metric}: {value}"
         )
 
-    # Save results
-    save_evaluation_results(results)
+    with open("evaluation_results.json", "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
