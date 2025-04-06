@@ -11,7 +11,7 @@ def query_rag_streaming(query, k=3, vector_db=None, use_hybrid=False):
     """
     retrieved_docs = retrieve_documents(query, k, vector_db, use_hybrid)
     retrieved_texts = [doc.page_content for doc in retrieved_docs]
-
+    print(retrieved_texts)
     for response_chunk in generate_answer_streaming(
         query=query,
         retrieved_texts=retrieved_texts,
@@ -78,8 +78,11 @@ if __name__ == "__main__":
     prompts = load_prompts()
     prompt_template = prompts["rag_default"]
 
-    if os.path.exists("./chroma_db"):
+    vector_db = None
+
+    if os.path.exists("chroma_db"):
         vector_db = load_vector_db()
+        print("Vector database loaded")
     else:
         vector_db = None
 
